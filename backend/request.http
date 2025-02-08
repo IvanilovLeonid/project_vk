@@ -1,0 +1,13 @@
+# GET запрос для получения всех контейнеров
+GET http://localhost:8080/containers
+
+### Разделитель для другого запроса
+
+# POST запрос для отправки данных о пинге контейнера
+POST http://localhost:8080/ping
+Content-Type: application/json
+
+{
+  "ip_address": "192.168.1.2",
+  "success": true
+}
