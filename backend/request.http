@@ -1,10 +1,13 @@
 # GET запрос для получения всех контейнеров
-GET http://localhost:8080/containers
+# curl http://localhost:8081/ping
+#curl http://localhost:8081/containers
+GET http://192.168.1.2:8081/containers
 
+##
 ### Разделитель для другого запроса
 
 # POST запрос для отправки данных о пинге контейнера
-POST http://localhost:8080/ping
+POST http://localhost:8081/ping
 Content-Type: application/json
 
 {

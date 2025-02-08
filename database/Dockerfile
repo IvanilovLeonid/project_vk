@@ -1,6 +1,5 @@
-FROM golang:1.23-alpine
-WORKDIR /app
-COPY . .
-RUN go mod download
-RUN go build -o main .
-CMD ["./main"]
+# Используем официальный образ PostgreSQL
+FROM postgres:13
+
+# Копируем скрипт для инициализации базы данных
+COPY init.sql /docker-entrypoint-initdb.d/
