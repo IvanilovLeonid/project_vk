@@ -1,16 +1,17 @@
 package main
 
 import (
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-// Модель контейнера
 type Container struct {
 	ID                 uint      `gorm:"primaryKey"`
 	IPAddress          string    `gorm:"unique;not null"`
@@ -18,30 +19,31 @@ type Container struct {
 	LastSuccessfulPing time.Time
 }
 
-// Структура для подключения к базе данных
 var DB *gorm.DB
 
-// Инициализация базы данных
 func initDB() {
-	// Строка подключения для PostgreSQL
-	dsn := "host=localhost user=postgres password=mysecretpassword dbname=container_monitoring port=5432 sslmode=disable"
-	var err error
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Ошибка загрузки .env файла: %v", err)
+	}
 
-	// Подключаемся к базе данных
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		log.Fatalf("Переменная DATABASE_URL не установлена в .env файле")
+	}
+
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Ошибка подключения к базе данных: %v", err)
 	}
 
-	// Выполняем миграцию (создаем таблицы)
 	if err := DB.AutoMigrate(&Container{}); err != nil {
 		log.Fatalf("Ошибка миграции базы данных: %v", err)
 	}
-	log.Println("База данных и миграция успешно инициализированы")
+	log.Println("База данных инициализация завершена")
 }
 
-// Обработчик для получения всех контейнеров
-func GetContainers(c *gin.Context) {
+func getContainers(c *gin.Context) {
 	var containers []Container
 	if err := DB.Find(&containers).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка получения данных"})
@@ -50,8 +52,7 @@ func GetContainers(c *gin.Context) {
 	c.JSON(http.StatusOK, containers)
 }
 
-// Обработчик для создания или обновления контейнера
-func PingContainer(c *gin.Context) {
+func pingContainer(c *gin.Context) {
 	var req struct {
 		IPAddress string `json:"ip_address"`
 		Success   bool   `json:"success"`
@@ -63,21 +64,23 @@ func PingContainer(c *gin.Context) {
 	}
 
 	var container Container
-	if err := DB.Where("ip_address = ?", req.IPAddress).First(&container).Error; err != nil {
+	err := DB.Where("ip_address = ?", req.IPAddress).First(&container).Error
+	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			container = Container{
-				IPAddress:    req.IPAddress,
-				LastPingTime: time.Now(),
+				IPAddress:          req.IPAddress,
+				LastPingTime:       time.Now(),
+				LastSuccessfulPing: time.Time{},
 			}
 			if req.Success {
 				container.LastSuccessfulPing = time.Now()
 			}
 			if err := DB.Create(&container).Error; err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка создания нового контейнера"})
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка создания контейнера"})
 				return
 			}
 		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка получения контейнера"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка получения данных контейнера"})
 			return
 		}
 	} else {
@@ -95,16 +98,11 @@ func PingContainer(c *gin.Context) {
 }
 
 func main() {
-	// Инициализируем базу данных
 	initDB()
 
-	// Инициализируем роутер
 	r := gin.Default()
+	r.GET("/containers", getContainers)
+	r.POST("/ping", pingContainer)
 
-	// Определяем маршруты
-	r.GET("/containers", GetContainers)
-	r.POST("/ping", PingContainer)
-
-	// Запуск сервиса
-	r.Run(":8081") // HTTP сервер на порту 8081 для Database Service
+	r.Run(":8081")
 }
