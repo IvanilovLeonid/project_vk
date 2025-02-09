@@ -132,7 +132,6 @@ func pingContainersAutomatically() {
 func main() {
 	initDB()
 
-	// Запускаем автоматический пинг контейнеров
 	go pingContainersAutomatically()
 
 	r := gin.Default()
@@ -141,6 +140,8 @@ func main() {
 
 	r.GET("/containers", getContainers)
 	r.POST("/ping", pingContainer)
+	r.GET("/health", healthCheck)
+	r.DELETE("/containers/:ip_address", deleteContainer)
 
 	r.Run("0.0.0.0:8081")
 }
