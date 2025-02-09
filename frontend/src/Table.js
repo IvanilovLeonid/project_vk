@@ -1,39 +1,53 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
+import { getContainers } from "./api";
 
-const Table = () => {
-    const [data, setData] = useState([]);
+function Table() {
+    const [containers, setContainers] = useState([]);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Замените URL на ваш Backend-сервис
-        fetch('http://localhost:8081/containers')
-            .then((response) => response.json())
-            .then((data) => setData(data))
-            .catch((error) => console.error('Error fetching data:', error));
+        const fetchData = async () => {
+            try {
+                const data = await getContainers();
+                setContainers(data);
+            } catch (err) {
+                setError("Не удалось загрузить данные.");
+            }
+        };
+
+        fetchData();
     }, []);
 
+    if (error) {
+        return <div style={{ color: "red" }}>{error}</div>;
+    }
+
     return (
-        <div>
-            <h1>Container Data</h1>
-            <table>
-                <thead>
-                <tr>
-                    <th>IP Address</th>
-                    <th>Last Ping Time</th>
-                    <th>Last Successful Ping</th>
+        <table border="1" cellPadding="10" style={{ width: "100%", textAlign: "left" }}>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>IP-адрес</th>
+                <th>Последний пинг</th>
+                <th>Последний успешный пинг</th>
+            </tr>
+            </thead>
+            <tbody>
+            {containers.map((container) => (
+                <tr key={container.ID}>
+                    <td>{container.ID}</td>
+                    <td>{container.IPAddress}</td>
+                    <td>{new Date(container.LastPingTime).toLocaleString()}</td>
+                    <td>
+                        {container.LastSuccessfulPing
+                            ? new Date(container.LastSuccessfulPing).toLocaleString()
+                            : "Нет данных"}
+                    </td>
                 </tr>
-                </thead>
-                <tbody>
-                {data.map((item) => (
-                    <tr key={item.id}>
-                        <td>{item.ip_address}</td>
-                        <td>{new Date(item.last_ping_time).toLocaleString()}</td>
-                        <td>{new Date(item.last_successful_ping).toLocaleString()}</td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
-        </div>
+            ))}
+            </tbody>
+        </table>
     );
-};
+}
 
 export default Table;

@@ -1,13 +1,13 @@
-import React from 'react';
-import './App.css';
-import Table from './Table';
+import React from "react";
+import Table from "./Table";
 
 function App() {
-  return (
-      <div className="App">
-        <Table />
-      </div>
-  );
+    return (
+        <div style={{ padding: "20px" }}>
+            <h1>Контейнеры</h1>
+            <Table />
+        </div>
+    );
 }
 
 export default App;

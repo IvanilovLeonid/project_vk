@@ -16,7 +16,7 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - DATABASE_URL=postgres://myuser:mypassword@db:5432/dbname?sslmode=disable
+      - DATABASE_URL=postgres://myuser:mypassword@postgres:5432/dbname?sslmode=disable
     depends_on:
       - db
     networks:

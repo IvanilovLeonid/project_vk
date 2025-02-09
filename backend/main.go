@@ -1,15 +1,16 @@
 package main
 
 import (
-	"log"
-	"net/http"
-	"os"
-	"time"
-
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log"
+	"net/http"
+	"os"
+	"os/exec"
+	"time"
 )
 
 type Container struct {
@@ -97,10 +98,50 @@ func pingContainer(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Ping received"})
 }
 
+// Функция для автоматического пинга контейнеров каждую секунду
+func pingContainersAutomatically() {
+	for {
+		var containers []Container
+		if err := DB.Find(&containers).Error; err != nil {
+			log.Printf("Ошибка получения контейнеров: %v", err)
+			time.Sleep(10 * time.Second)
+			continue
+		}
+
+		for _, container := range containers {
+			cmd := exec.Command("ping", "-c", "1", container.IPAddress)
+			err := cmd.Run()
+
+			// Если пинг успешный
+			success := err == nil
+			log.Printf("Пинг для %s: %v", container.IPAddress, success)
+
+			// Обновляем запись в базе данных
+			container.LastPingTime = time.Now()
+			if success {
+				container.LastSuccessfulPing = time.Now()
+			}
+			if err := DB.Save(&container).Error; err != nil {
+				log.Printf("Ошибка обновления контейнера %s: %v", container.IPAddress, err)
+			}
+		}
+
+		// Ждем 10 секунд перед следующей попыткой
+		time.Sleep(10 * time.Minute)
+	}
+
+}
+
 func main() {
 	initDB()
 
+	// Запускаем автоматический пинг контейнеров
+	go pingContainersAutomatically()
+
 	r := gin.Default()
+
+	r.Use(cors.Default())
+
 	r.GET("/containers", getContainers)
 	r.POST("/ping", pingContainer)
 
