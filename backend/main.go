@@ -36,7 +36,7 @@ func initDB() {
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err := DB.AutoMigrate(&Container{}); err != nil {
-		log.Fatalf("Ошибка миграции базы данных: %v", err)
+		//log.Fatalf("Ошибка миграции базы данных: %v", err)
 	}
 	log.Println("База данных инициализация завершена")
 }

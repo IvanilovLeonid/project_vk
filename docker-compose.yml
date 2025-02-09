@@ -23,12 +23,14 @@ services:
   db:
     image: postgres:13
     environment:
-      POSTGRES_HOST: postgres
+      POSTGRES_HOST: db
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypassword
       POSTGRES_DB: dbname
     ports:
       - "5432:5432"
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/1-init.sql
     networks:
       - app_network
 
