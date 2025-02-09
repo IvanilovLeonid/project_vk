@@ -5,7 +5,7 @@ import { pingContainer } from "./api";
 function App() {
     const [ipAddress, setIpAddress] = useState("");
     const [message, setMessage] = useState("");
-    const [success, setSuccess] = useState(true);  // Добавим состояние для успеха пинга
+    const [success, setSuccess] = useState(true);
 
     const handlePingContainer = async (e) => {
         e.preventDefault();
@@ -37,11 +37,11 @@ function App() {
                     onChange={(e) => setSuccess(e.target.value === "true")}
                     style={{ padding: "8px", marginRight: "10px" }}
                 >
-                    <option value="true">Успешный пинг</option>
-                    <option value="false">Неудачный пинг</option>
+                    <option value="true">Активный контейнер</option>
+                    <option value="false">Неактивный контейнер</option>
                 </select>
                 <button type="submit" style={{ padding: "8px 16px" }}>
-                    Отправить пинг
+                    Добавить Контейнер
                 </button>
             </form>
 

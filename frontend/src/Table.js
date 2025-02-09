@@ -29,22 +29,33 @@ function Table() {
                 <th>ID</th>
                 <th>IP-адрес</th>
                 <th>Последний пинг</th>
-                <th>Последний успешный пинг</th>
+                <th>Статус</th>
             </tr>
             </thead>
             <tbody>
-            {containers.map((container) => (
-                <tr key={container.ID}>
-                    <td>{container.ID}</td>
-                    <td>{container.IPAddress}</td>
-                    <td>{new Date(container.LastPingTime).toLocaleString()}</td>
-                    <td>
-                        {container.LastSuccessfulPing
-                            ? new Date(container.LastSuccessfulPing).toLocaleString()
-                            : "Нет данных"}
-                    </td>
-                </tr>
-            ))}
+            {containers.map((container) => {
+
+                const isActive = container.LastPingTime === container.LastSuccessfulPing;
+                return (
+                    <tr key={container.ID}>
+                        <td>{container.ID}</td>
+                        <td>{container.IPAddress}</td>
+                        <td>{new Date(container.LastPingTime).toLocaleString()}</td>
+                        <td>
+                            <span
+                                style={{
+                                    display: "inline-block",
+                                    width: "10px",
+                                    height: "10px",
+                                    borderRadius: "50%",
+                                    backgroundColor: isActive ? "green" : "red",
+                                }}
+                            ></span>
+                            {isActive ? "Активен" : "Неактивен"}
+                        </td>
+                    </tr>
+                );
+            })}
             </tbody>
         </table>
     );
