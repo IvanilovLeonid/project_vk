@@ -34,9 +34,6 @@ func initDB() {
 	}
 
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		log.Fatalf("Ошибка подключения к базе данных: %v", err)
-	}
 
 	if err := DB.AutoMigrate(&Container{}); err != nil {
 		log.Fatalf("Ошибка миграции базы данных: %v", err)
@@ -127,7 +124,7 @@ func pingContainersAutomatically() {
 		}
 
 		// Ждем 10 секунд перед следующей попыткой
-		time.Sleep(10 * time.Minute)
+		time.Sleep(10 * time.Second)
 	}
 
 }
