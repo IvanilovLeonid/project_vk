@@ -1,7 +1,7 @@
 # GET запрос для получения всех контейнеров
 # curl http://localhost:8081/ping
 #curl http://localhost:8081/containers
-GET http://192.168.1.2:8081/containers
+GET http://localhost:8081/containers
 
 ##
 ### Разделитель для другого запроса
